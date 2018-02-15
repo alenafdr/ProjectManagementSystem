@@ -2,7 +2,7 @@ package service;
 
 import java.util.List;
 
-public interface GenericDAO<T, ID> {
+public interface GenericService <T, ID>{
     public abstract boolean save(T t);
     public abstract T getById(ID id);
     public abstract List<T> getAll();

@@ -10,7 +10,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JDBCCustomerDAO extends JDBCGeneric implements GenericDAO{
+public class JDBCCustomerDAO extends JDBCGeneric implements GenericDAO<Customer, Integer>{
     private String nameTable = "customers";
     JDBCProjectDAO JDBCProjectDAO;
 
@@ -19,8 +19,7 @@ public class JDBCCustomerDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public boolean save(Core core) {
-        Customer customer = (Customer) core;
+    public boolean save(Customer customer) {
         String sql = "INSERT INTO " + nameTable + "(name) VALUES " +
                 "('" + customer.getName() + "')"
                 ;
@@ -49,7 +48,7 @@ public class JDBCCustomerDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public Customer getById(int id) {
+    public Customer getById(Integer id) {
         Customer result = null;
         if (id == 0){
             return new Customer(0, "null");
@@ -76,8 +75,8 @@ public class JDBCCustomerDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public List<Core> getAll() {
-        List<Core> result = new ArrayList<>();
+    public List<Customer> getAll() {
+        List<Customer> result = new ArrayList<>();
         Customer customer = null;
         try (Connection connection = connect();
              Statement statement = connection.createStatement())
@@ -101,8 +100,7 @@ public class JDBCCustomerDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public boolean update(int id, Core core) {
-        Customer customer = (Customer) core;
+    public boolean update(Integer id, Customer customer) {
         String sql = "UPDATE " + nameTable + " SET name = ? WHERE id = ?";
 
         try (Connection connection = connect();
@@ -127,9 +125,7 @@ public class JDBCCustomerDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public boolean remove(Core core) {
-        Customer customer = (Customer) core;
-
+    public boolean remove(Customer customer) {
         String sql = "DELETE FROM " + nameTable + " WHERE id = ?";
 
         try (Connection connection = connect();

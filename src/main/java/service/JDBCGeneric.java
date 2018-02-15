@@ -1,10 +1,6 @@
 package service;
 
-import model.Core;
-
 import java.sql.*;
-
-import java.util.List;
 
 public abstract class JDBCGeneric {
 
