@@ -2,22 +2,22 @@ package service;
 
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
-import model.Core;
 import model.Developer;
 import model.Skill;
 import view.ConsoleHelper;
 
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-public class JDBCSkillDAO extends JDBCGeneric implements GenericDAO{
+public class JDBCSkillDAO extends JDBCGeneric implements GenericDAO<Skill, Integer>{
 
     private String nameTable = "skills";
 
     @Override
-    public boolean save(Core core){
-        Skill skill = (Skill) core;
-
+    public boolean save(Skill skill){
         String sql = "INSERT INTO " + nameTable + "(name) VALUES ('" + skill.getName() + "')";
         try (Connection connection = connect();
              Statement statement = connection.createStatement())
@@ -41,7 +41,7 @@ public class JDBCSkillDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public Skill getById(int id){
+    public Skill getById(Integer id){
         Skill result = null;
         if (id == 0){
             return new Skill(0, "no skill");
@@ -65,8 +65,8 @@ public class JDBCSkillDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public List<Core> getAll(){
-        List<Core> result = new ArrayList<>();
+    public List<Skill> getAll(){
+        List<Skill> result = new ArrayList<>();
         try (Connection connection = connect();
              Statement statement = connection.createStatement())
         {
@@ -87,9 +87,7 @@ public class JDBCSkillDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public boolean update(int id, Core core){
-        Skill skill = (Skill) core;
-
+    public boolean update(Integer id, Skill skill){
         String sql = "UPDATE " + nameTable + " SET name = ? WHERE id = ?";
 
         try (Connection connection = connect();
@@ -109,9 +107,7 @@ public class JDBCSkillDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public boolean remove(Core core){
-        Skill skill = (Skill) core;
-
+    public boolean remove(Skill skill){
         String sql = "DELETE FROM " + nameTable + " WHERE id = ?";
 
         try (Connection connection = connect();

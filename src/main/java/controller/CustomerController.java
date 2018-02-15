@@ -4,8 +4,7 @@ import model.Core;
 import model.Customer;
 import model.Project;
 import service.CustomerService;
-import service.JDBCCustomerDAO;
-import service.JDBCProjectDAO;
+import service.ProjectService;
 import view.ConsoleHelper;
 import view.CoreView;
 
@@ -13,13 +12,13 @@ import java.util.List;
 
 public class CustomerController extends CoreController {
     private DataReceiver dr;
-    private JDBCProjectDAO JDBCProjectDAO;
+    private ProjectService projectService;
     private CustomerService customerService;
 
     public CustomerController() {
         super();
         dr = super.getDr();
-        JDBCProjectDAO = new JDBCProjectDAO();
+        projectService = new ProjectService();
         customerService = new CustomerService();
         super.start();
     }
@@ -39,14 +38,14 @@ public class CustomerController extends CoreController {
             ConsoleHelper.showMessage("Введите id project для нового объекта или 0, чтобы продолжить");
 
             Project project;
-            for (Core core : JDBCProjectDAO.getAll()){ //показать все проекты, которые есть в базе
+            for (Core core : projectService.getAll()){ //показать все проекты, которые есть в базе
                 project = (Project) core;
                 CoreView.show(project);
             }
 
             idProject = dr.readInt();
             if (idProject == 0) continue;
-            if (JDBCProjectDAO.getById(idProject) == null){
+            if (projectService.getById(idProject) == null){
                 ConsoleHelper.showMessage("Project с таким id не существует, перейти в меню сущности project? yes/no");
                 if (dr.readBoolean()){
                     ProjectController projectController = new ProjectController(); //переходим в меню skill
@@ -54,8 +53,8 @@ public class CustomerController extends CoreController {
                     continue;
                 }
             }
-            customer.setProject(JDBCProjectDAO.getById(idProject));
-            ConsoleHelper.showMessage("Добавлен project " + JDBCProjectDAO.getById(idProject));
+            customer.setProject(projectService.getById(idProject));
+            ConsoleHelper.showMessage("Добавлен project " + projectService.getById(idProject));
 
         } while (idProject != 0);
 

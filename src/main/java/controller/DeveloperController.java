@@ -3,23 +3,23 @@ package controller;
 import model.Core;
 import model.Developer;
 import model.Skill;
-import service.JDBCDeveloperDAO;
-import service.JDBCSkillDAO;
+import service.DeveloperService;
+import service.SkillService;
 import view.ConsoleHelper;
 import view.CoreView;
 
 import java.util.List;
 
 public class DeveloperController extends CoreController {
-    private JDBCDeveloperDAO JDBCDeveloperDAO;
-    private JDBCSkillDAO JDBCSkillDAO;
+    private DeveloperService developerService;
+    private SkillService skillService;
     private DataReceiver dr;
 
     public DeveloperController() {
         super();
         dr = super.getDr();
-        JDBCDeveloperDAO = new JDBCDeveloperDAO();
-        JDBCSkillDAO = new JDBCSkillDAO();
+        developerService = new DeveloperService();
+        skillService = new SkillService();
         super.start();
     }
 
@@ -38,14 +38,14 @@ public class DeveloperController extends CoreController {
             ConsoleHelper.showMessage("Введите id skill для нового объекта или 0, чтобы продолжить");
 
             Skill skill;
-            for (Core core : JDBCSkillDAO.getAll()){ //показать все навыки, которые есть в базе
+            for (Core core : skillService.getAll()){ //показать все навыки, которые есть в базе
                 skill = (Skill) core;
                 CoreView.show(skill);
             }
 
             idSkill = dr.readInt();
             if (idSkill == 0) continue;
-            if (JDBCSkillDAO.getById(idSkill) == null){
+            if (skillService.getById(idSkill) == null){
                 ConsoleHelper.showMessage("Skill с таким id не существует, перейти в меню сущности skill? yes/no");
                 if (dr.readBoolean()){
                     new SkillController(); //переходим в меню skill
@@ -53,8 +53,8 @@ public class DeveloperController extends CoreController {
                     continue;
                 }
             }
-            developer.setSkill(JDBCSkillDAO.getById(idSkill));
-            ConsoleHelper.showMessage("Добавлен skill " + JDBCSkillDAO.getById(idSkill).toString());
+            developer.setSkill(skillService.getById(idSkill));
+            ConsoleHelper.showMessage("Добавлен skill " + skillService.getById(idSkill).toString());
 
         } while (idSkill != 0);
         return developer;
@@ -64,7 +64,7 @@ public class DeveloperController extends CoreController {
     public void save(Core core) {
         Developer developer = (Developer) core;
 
-        if (JDBCDeveloperDAO.save(developer)){
+        if (developerService.save(developer)){
             ConsoleHelper.showMessage("Объект создан");
         } else {
             ConsoleHelper.showMessage("Объект не создан, попробуйте еще раз");
@@ -79,7 +79,7 @@ public class DeveloperController extends CoreController {
             if (id == 0) {
                 break;
             }
-            Developer developer = JDBCDeveloperDAO.getById(id);
+            Developer developer = developerService.getById(id);
             if (developer != null){
                 CoreView.show(developer);
             } else {
@@ -90,7 +90,7 @@ public class DeveloperController extends CoreController {
 
     @Override
     public void readAll(){
-        List<Core> developers = JDBCDeveloperDAO.getAll();
+        List<Developer> developers = developerService.getAll();
         if (developers.isEmpty()){
             ConsoleHelper.showMessage("Список пуст");
         } else {
@@ -110,14 +110,14 @@ public class DeveloperController extends CoreController {
             ConsoleHelper.showMessage("Введите id, который хотите обновить или 0, чтобы выйти");
             id = dr.readInt();
             if (id == 0) return;
-            developer = JDBCDeveloperDAO.getById(id);
+            developer = developerService.getById(id);
             if (developer == null){
                 ConsoleHelper.showMessage("Нет такого объекта");
             }
         } while (developer == null);
 
 
-        if (JDBCDeveloperDAO.update(id, create())){
+        if (developerService.update(id, create())){
             ConsoleHelper.showMessage("Объект обновлен");
         } else {
             ConsoleHelper.showMessage("Не удалось обновить объект");
@@ -129,7 +129,7 @@ public class DeveloperController extends CoreController {
         ConsoleHelper.showMessage("Введите id удаляемого объекта");
         int id = dr.readInt();
 
-        if (JDBCDeveloperDAO.remove(JDBCDeveloperDAO.getById(id))){
+        if (developerService.remove(developerService.getById(id))){
             ConsoleHelper.showMessage("Объект удален");
         } else {
             ConsoleHelper.showMessage("Нет такого объекта");

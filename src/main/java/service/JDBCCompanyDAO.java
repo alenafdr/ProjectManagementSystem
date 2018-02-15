@@ -2,7 +2,6 @@ package service;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import model.Company;
-import model.Core;
 import model.Project;
 import view.ConsoleHelper;
 
@@ -10,7 +9,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JDBCCompanyDAO extends JDBCGeneric implements GenericDAO{
+public class JDBCCompanyDAO extends JDBCGeneric implements GenericDAO<Company, Integer>{
     private String nameTable = "companies";
     JDBCProjectDAO JDBCProjectDAO;
 
@@ -19,9 +18,7 @@ public class JDBCCompanyDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public boolean save(Core core) {
-        Company company = (Company) core;
-
+    public boolean save(Company company) {
         String sql = "INSERT INTO " + nameTable + "(name) VALUES " +
                 "('" + company.getName() + "')"
                 ;
@@ -50,7 +47,7 @@ public class JDBCCompanyDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public Company getById(int id){
+    public Company getById(Integer id){
         Company result = null;
         if (id == 0){
             return new Company(0, "null");
@@ -76,8 +73,8 @@ public class JDBCCompanyDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public List<Core> getAll(){
-        List<Core> result = new ArrayList<>();
+    public List<Company> getAll(){
+        List<Company> result = new ArrayList<>();
         Company company = null;
         try (Connection connection = connect();
              Statement statement = connection.createStatement())
@@ -100,9 +97,7 @@ public class JDBCCompanyDAO extends JDBCGeneric implements GenericDAO{
         return result;
     }
     @Override
-    public boolean update(int id, Core core) {
-        Company company = (Company) core;
-
+    public boolean update(Integer id, Company company) {
         String sql = "UPDATE " + nameTable + " SET name = ? WHERE id = ?";
 
         try (Connection connection = connect();
@@ -127,9 +122,7 @@ public class JDBCCompanyDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public boolean remove(Core core) {
-        Company company = (Company) core;
-
+    public boolean remove(Company company) {
         String sql = "DELETE FROM " + nameTable + " WHERE id = ?";
 
         try (Connection connection = connect();

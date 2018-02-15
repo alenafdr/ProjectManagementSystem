@@ -1,7 +1,6 @@
 package service;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
-import model.Core;
 import model.Developer;
 import model.Project;
 import model.Skill;
@@ -13,7 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class JDBCDeveloperDAO extends JDBCGeneric implements GenericDAO{
+public class JDBCDeveloperDAO extends JDBCGeneric implements GenericDAO<Developer, Integer>{
     private String nameTable = "developers";
     private JDBCSkillDAO JDBCSkillDAO;
 
@@ -22,9 +21,7 @@ public class JDBCDeveloperDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public boolean save(Core core){
-        Developer developer = (Developer) core;
-
+    public boolean save(Developer developer){
         String sql = "INSERT INTO " + nameTable + "(name) VALUES " +
                 "('" + developer.getName() + "')"
                 ;
@@ -53,7 +50,7 @@ public class JDBCDeveloperDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public Developer getById(int id){
+    public Developer getById(Integer id){
         Developer result = null;
         if (id == 0){
             return new Developer(0, "null");
@@ -80,8 +77,8 @@ public class JDBCDeveloperDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public List<Core> getAll(){
-        List<Core> result = new ArrayList<>();
+    public List<Developer> getAll(){
+        List<Developer> result = new ArrayList<>();
         Developer developer = null;
         try (Connection connection = connect();
              Statement statement = connection.createStatement())
@@ -105,9 +102,7 @@ public class JDBCDeveloperDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public boolean update(int id, Core core){
-        Developer developer = (Developer) core;
-
+    public boolean update(Integer id, Developer developer){
         String sql = "UPDATE " + nameTable + " SET name = ? WHERE id = ?";
 
         try (Connection connection = connect();
@@ -132,9 +127,7 @@ public class JDBCDeveloperDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public boolean remove(Core core){
-        Developer developer = (Developer) core;
-
+    public boolean remove(Developer developer){
         String sql = "DELETE FROM " + nameTable + " WHERE id = ?";
 
         try (Connection connection = connect();

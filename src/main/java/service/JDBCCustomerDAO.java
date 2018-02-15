@@ -1,7 +1,6 @@
 package service;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
-import model.Core;
 import model.Customer;
 import model.Project;
 import view.ConsoleHelper;

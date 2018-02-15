@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class JDBCProjectDAO extends JDBCGeneric implements GenericDAO{
+public class JDBCProjectDAO extends JDBCGeneric implements GenericDAO<Project, Integer>{
     private String nameTable = "projects";
     JDBCDeveloperDAO JDBCDeveloperDAO;
 
@@ -20,9 +20,7 @@ public class JDBCProjectDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public boolean save(Core core){
-        Project project = (Project) core;
-
+    public boolean save(Project project){
         String sql = "INSERT INTO " + nameTable + "(name) VALUES " +
                 "('" + project.getName() + "')"
                 ;
@@ -51,7 +49,7 @@ public class JDBCProjectDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public Project getById(int id){
+    public Project getById(Integer id){
         Project result = null;
         if (id == 0){
             return new Project(0, "null");
@@ -77,8 +75,8 @@ public class JDBCProjectDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public List<Core> getAll(){
-        List<Core> result = new ArrayList<>();
+    public List<Project> getAll(){
+        List<Project> result = new ArrayList<>();
         Project project = null;
         try (Connection connection = connect();
              Statement statement = connection.createStatement())
@@ -102,9 +100,7 @@ public class JDBCProjectDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public boolean update(int id, Core core){
-        Project project = (Project) core;
-
+    public boolean update(Integer id, Project project){
         String sql = "UPDATE " + nameTable + " SET name = ? WHERE id = ?";
 
         try (Connection connection = connect();
@@ -129,9 +125,7 @@ public class JDBCProjectDAO extends JDBCGeneric implements GenericDAO{
     }
 
     @Override
-    public boolean remove(Core core){
-        Project project = (Project) core;
-
+    public boolean remove(Project project){
         String sql = "DELETE FROM " + nameTable + " WHERE id = ?";
 
         try (Connection connection = connect();
