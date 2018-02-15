@@ -6,7 +6,7 @@ import java.sql.*;
 
 import java.util.List;
 
-public abstract class CoreDAO {
+public abstract class JDBCGeneric {
 
     private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
     private static final String DATABASE_URL = "jdbc:mysql://localhost:3306/DBProjectManagementSystem";
@@ -28,9 +28,5 @@ public abstract class CoreDAO {
         return connection;
 
     }
-    public abstract boolean save(Core core);
-    public abstract Core getById(int id);
-    public abstract List<Core> getAll();
-    public abstract boolean update(int id, Core core);
-    public abstract boolean remove(Core core);
+
 }

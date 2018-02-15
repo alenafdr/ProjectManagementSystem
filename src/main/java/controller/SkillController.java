@@ -2,18 +2,18 @@ package controller;
 
 import model.Core;
 import model.Skill;
-import service.SkillDAO;
+import service.JDBCSkillDAO;
 import view.ConsoleHelper;
 import view.CoreView;
 
 import java.util.List;
 
 public class SkillController extends CoreController {
-    private SkillDAO skillDAO;
+    private JDBCSkillDAO JDBCSkillDAO;
     private DataReceiver dr;
 
     public SkillController() {
-        skillDAO = new SkillDAO();
+        JDBCSkillDAO = new JDBCSkillDAO();
         dr = new DataReceiver();
         super.start();
     }
@@ -33,7 +33,7 @@ public class SkillController extends CoreController {
     public void save(Core core) {
         Skill skill = (Skill) core;
 
-        if (skillDAO.save(skill)){
+        if (JDBCSkillDAO.save(skill)){
             ConsoleHelper.showMessage("Объект сохранен");
         } else {
             ConsoleHelper.showMessage("Объект не сохранен, попробуйте еще раз");
@@ -48,7 +48,7 @@ public class SkillController extends CoreController {
             if (id == 0) {
                 break;
             }
-            Skill skill = skillDAO.getById(id);
+            Skill skill = JDBCSkillDAO.getById(id);
             if (skill != null){
                 CoreView.show(skill);
             } else {
@@ -59,7 +59,7 @@ public class SkillController extends CoreController {
 
     @Override
     public void readAll() {
-        List<Core> skills = skillDAO.getAll();
+        List<Core> skills = JDBCSkillDAO.getAll();
         if (skills.isEmpty()){
             ConsoleHelper.showMessage("Список пуст");
         } else {
@@ -79,13 +79,13 @@ public class SkillController extends CoreController {
             ConsoleHelper.showMessage("Введите id, который хотите обновить или 0, чтобы выйти");
             id = dr.readInt();
             if (id == 0) return;
-            skill = skillDAO.getById(id);
+            skill = JDBCSkillDAO.getById(id);
             if (skill == null){
                 ConsoleHelper.showMessage("Нет такого объекта");
             }
         } while (skill == null);
 
-        if (skillDAO.update(id, create())){
+        if (JDBCSkillDAO.update(id, create())){
             ConsoleHelper.showMessage("Объект обновлен");
         } else {
             ConsoleHelper.showMessage("Не удалось обновить объект");
@@ -98,7 +98,7 @@ public class SkillController extends CoreController {
         ConsoleHelper.showMessage("Введите id удаляемого объекта");
         int id = dr.readInt();
 
-        if (skillDAO.remove(skillDAO.getById(id))){
+        if (JDBCSkillDAO.remove(JDBCSkillDAO.getById(id))){
             ConsoleHelper.showMessage("Объект удален");
         } else {
             ConsoleHelper.showMessage("Нет такого объекта");

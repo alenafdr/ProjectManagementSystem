@@ -1,50 +1,38 @@
 package service;
 
+
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import model.Core;
 import model.Developer;
-import model.Project;
 import model.Skill;
 import view.ConsoleHelper;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public class DeveloperDAO extends CoreDAO{
-    private String nameTable = "developers";
-    private SkillDAO skillDAO;
+public class JDBCSkillDAO extends JDBCGeneric implements GenericDAO{
 
-    public DeveloperDAO() {
-        skillDAO = new SkillDAO();
-    }
+    private String nameTable = "skills";
 
     @Override
     public boolean save(Core core){
-        Developer developer = (Developer) core;
+        Skill skill = (Skill) core;
 
-        String sql = "INSERT INTO " + nameTable + "(name) VALUES " +
-                "('" + developer.getName() + "')"
-                ;
+        String sql = "INSERT INTO " + nameTable + "(name) VALUES ('" + skill.getName() + "')";
         try (Connection connection = connect();
              Statement statement = connection.createStatement())
         {
             statement.executeUpdate(sql);
             ResultSet resultSet = statement.executeQuery("SELECT LAST_INSERT_ID() as id");
-            int idDeveloper = 0;
             while (resultSet.next()) {
-                idDeveloper = resultSet.getInt("id");
-                ConsoleHelper.showMessage("Inserted object (id=" + idDeveloper + ")");
-            }
-            for (Skill skill : developer.getSkills()){
-                skillDAO.addSkillToDeveloper(skill.getId(), idDeveloper);
+                int id = resultSet.getInt("id");
+                ConsoleHelper.showMessage("Insert object (id=" + id + ")");
+                return true;
             }
             resultSet.close();
-            return true;
+
         } catch (MySQLIntegrityConstraintViolationException e){
-            ConsoleHelper.showMessage(e.getMessage());
+            ConsoleHelper.showMessage("Duplicate entry '" + skill.getName() + "'");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -53,10 +41,10 @@ public class DeveloperDAO extends CoreDAO{
     }
 
     @Override
-    public Developer getById(int id){
-        Developer answer = null;
+    public Skill getById(int id){
+        Skill result = null;
         if (id == 0){
-            return new Developer(0, "null");
+            return new Skill(0, "no skill");
         }
         String sql = "SELECT * FROM " + nameTable + " WHERE id = " + id;
         try(Connection connection = connect();
@@ -66,61 +54,50 @@ public class DeveloperDAO extends CoreDAO{
             while (resultSet.next()) {
                 int newId = resultSet.getInt("id");
                 String name = resultSet.getString("name");
-                answer = new Developer(newId, name);
-                for (Skill skill : skillDAO.getSkillByDeveloperId(newId)){
-                    answer.setSkill(skill);
-                }
+                result = new Skill(newId, name);
             }
             resultSet.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return answer;
+        return result;
     }
 
     @Override
     public List<Core> getAll(){
         List<Core> result = new ArrayList<>();
-        Developer developer = null;
         try (Connection connection = connect();
              Statement statement = connection.createStatement())
         {
-            String sql = "SELECT * FROM " + nameTable + " ORDER BY name";
+            String sql = "SELECT * FROM " + nameTable + " ORDER BY id";
             ResultSet resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 String name = resultSet.getString("name");
-                developer = new Developer(id, name);
-                for (Skill skill : skillDAO.getSkillByDeveloperId(id)){
-                    developer.setSkill(skill);
-                }
-                result.add(developer);
+
+                result.add(new Skill(id, name));
             }
             resultSet.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return result;
     }
 
     @Override
     public boolean update(int id, Core core){
-        Developer developer = (Developer) core;
+        Skill skill = (Skill) core;
 
         String sql = "UPDATE " + nameTable + " SET name = ? WHERE id = ?";
 
         try (Connection connection = connect();
              PreparedStatement statement = connection.prepareStatement(sql))
         {
-            statement.setString(1, developer.getName());
+            statement.setString(1, skill.getName());
             statement.setInt(2, id);
             statement.executeUpdate();
-            for (Skill skill : developer.getSkills()){
-                skillDAO.addSkillToDeveloper(skill.getId(), id);
-            }
-            developer.setId(id);
-            skillDAO.deleteAllExcept(developer);
             return true;
         } catch (MySQLIntegrityConstraintViolationException e){
             ConsoleHelper.showMessage(e.getMessage());
@@ -133,28 +110,28 @@ public class DeveloperDAO extends CoreDAO{
 
     @Override
     public boolean remove(Core core){
-        Developer developer = (Developer) core;
+        Skill skill = (Skill) core;
 
         String sql = "DELETE FROM " + nameTable + " WHERE id = ?";
 
         try (Connection connection = connect();
              PreparedStatement statement = connection.prepareStatement(sql))
         {
-            statement.setInt(1, developer.getId());
+            statement.setInt(1, skill.getId());
             statement.executeUpdate();
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (NullPointerException e){
-
+            ConsoleHelper.showMessage("Нет такого объекта");
         }
 
         return false;
     }
 
-    public void addDeveloperToProject(int idDeveloper, int idProject){
-        String sql = "INSERT INTO projects_developers(project_id, developer_id) " +
-                "VALUES (" + idProject + "," + idDeveloper + ")";
+    public void addSkillToDeveloper(int idSkill, int idDeveloper){
+        String sql = "INSERT INTO developers_skills(developer_id, skill_id) " +
+                "VALUES (" + idDeveloper + "," + idSkill + ")";
 
         try (Connection connection = connect();
              Statement statement = connection.createStatement())
@@ -165,19 +142,19 @@ public class DeveloperDAO extends CoreDAO{
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        ConsoleHelper.showMessage("Inserted developer " + idDeveloper + " to project " + idProject);
+        ConsoleHelper.showMessage("Inserted skill " + idSkill + " to developer " + idDeveloper);
     }
 
-    public Set<Developer> getDeveloperByProjectId(int id){
-        Set<Developer> result = new HashSet<>();
+    public Set<Skill> getSkillByDeveloperId(int id){
+        Set<Skill> result = new HashSet<>();
 
         try (Connection connection = connect();
              Statement statement = connection.createStatement())
         {
-            String sql = "SELECT * FROM projects_developers "+ " WHERE project_id = " + id+ " ORDER BY id";
+            String sql = "SELECT * FROM developers_skills "+ " WHERE developer_id = " + id+ " ORDER BY id";
             ResultSet resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                int idNew = resultSet.getInt("developer_id");
+                int idNew = resultSet.getInt("skill_id");
                 result.add(getById(idNew));
             }
             resultSet.close();
@@ -188,13 +165,13 @@ public class DeveloperDAO extends CoreDAO{
         return result;
     }
 
-    //удалить все developer, кроме переданных
+    //удалить все skill, кроме переданных
 
-    public void deleteAllExcept(Project project){
+    public void deleteAllExcept(Developer developer){
 
-        String sql = "DELETE FROM projects_developers " +
-                "WHERE project_id = " + project.getId() + " " +
-                "AND developer_id NOT IN (" + project.getDevelopersString() + ")";
+        String sql = "DELETE FROM developers_skills " +
+                "WHERE developer_id = " + developer.getId() + " " +
+                "AND skill_id NOT IN (" + developer.getSkillsString() + ")";
         try (Connection connection = connect();
              Statement statement = connection.createStatement())
         {

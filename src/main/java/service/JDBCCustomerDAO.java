@@ -6,21 +6,16 @@ import model.Customer;
 import model.Project;
 import view.ConsoleHelper;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
-public class CustomerDAO extends CoreDAO {
+public class JDBCCustomerDAO extends JDBCGeneric implements GenericDAO{
     private String nameTable = "customers";
-    ProjectDAO projectDAO;
+    JDBCProjectDAO JDBCProjectDAO;
 
-    public CustomerDAO() {
-        projectDAO = new ProjectDAO();
+    public JDBCCustomerDAO() {
+        JDBCProjectDAO = new JDBCProjectDAO();
     }
 
     @Override
@@ -40,7 +35,7 @@ public class CustomerDAO extends CoreDAO {
                 ConsoleHelper.showMessage("Inserted object (id=" + idCustomer + ")");
             }
             for (Project project : customer.getProjects()){
-                projectDAO.addProjectToCustomer(project.getId(), idCustomer);
+                JDBCProjectDAO.addProjectToCustomer(project.getId(), idCustomer);
             }
             resultSet.close();
             return true;
@@ -55,7 +50,7 @@ public class CustomerDAO extends CoreDAO {
 
     @Override
     public Customer getById(int id) {
-        Customer answer = null;
+        Customer result = null;
         if (id == 0){
             return new Customer(0, "null");
         }
@@ -67,16 +62,16 @@ public class CustomerDAO extends CoreDAO {
             while (resultSet.next()) {
                 int newId = resultSet.getInt("id");
                 String name = resultSet.getString("name");
-                answer = new Customer(newId, name);
-                for (Project project : projectDAO.getProjectByCustomerId(newId)){
-                    answer.setProject(project);
+                result = new Customer(newId, name);
+                for (Project project : JDBCProjectDAO.getProjectByCustomerId(newId)){
+                    result.setProject(project);
                 }
             }
             resultSet.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return answer;
+        return result;
 
     }
 
@@ -93,7 +88,7 @@ public class CustomerDAO extends CoreDAO {
                 int id = resultSet.getInt("id");
                 String name = resultSet.getString("name");
                 customer = new Customer(id, name);
-                for (Project project : projectDAO.getProjectByCustomerId(id)){
+                for (Project project : JDBCProjectDAO.getProjectByCustomerId(id)){
                     customer.setProject(project);
                 }
                 result.add(customer);
@@ -117,10 +112,10 @@ public class CustomerDAO extends CoreDAO {
             statement.setInt(2, id);
             statement.executeUpdate();
             for (Project project : customer.getProjects()){
-                projectDAO.addProjectToCustomer(project.getId(), id);
+                JDBCProjectDAO.addProjectToCustomer(project.getId(), id);
             }
             customer.setId(id);
-            projectDAO.deleteAllProjectFromCustomerExcept(customer);
+            JDBCProjectDAO.deleteAllProjectFromCustomerExcept(customer);
             return true;
         } catch (MySQLIntegrityConstraintViolationException e){
             ConsoleHelper.showMessage(e.getMessage());

@@ -3,8 +3,8 @@ package controller;
 import model.Core;
 import model.Developer;
 import model.Project;
-import service.DeveloperDAO;
-import service.ProjectDAO;
+import service.JDBCDeveloperDAO;
+import service.JDBCProjectDAO;
 import view.ConsoleHelper;
 import view.CoreView;
 
@@ -12,14 +12,14 @@ import java.util.List;
 
 public class ProjectController extends CoreController {
     private DataReceiver dr;
-    private DeveloperDAO developerDAO;
-    private ProjectDAO projectDAO;
+    private JDBCDeveloperDAO JDBCDeveloperDAO;
+    private JDBCProjectDAO JDBCProjectDAO;
 
     public ProjectController() {
         super();
         dr = super.getDr();
-        developerDAO = new DeveloperDAO();
-        projectDAO = new ProjectDAO();
+        JDBCDeveloperDAO = new JDBCDeveloperDAO();
+        JDBCProjectDAO = new JDBCProjectDAO();
         start();
     }
 
@@ -36,14 +36,14 @@ public class ProjectController extends CoreController {
             ConsoleHelper.showMessage("Введите id developer для нового объекта или 0, чтобы продолжить");
 
             Developer developer;
-            for (Core core : developerDAO.getAll()){ //показать все команды, которые есть в базе
+            for (Core core : JDBCDeveloperDAO.getAll()){ //показать все команды, которые есть в базе
                 developer = (Developer) core;
                 CoreView.show(developer);
             }
 
             idTeam = dr.readInt();
             if (idTeam == 0) continue;
-            if (developerDAO.getById(idTeam) == null){
+            if (JDBCDeveloperDAO.getById(idTeam) == null){
                 ConsoleHelper.showMessage("Developer с таким id не существует, перейти в меню сущности developer? yes/no");
                 if (dr.readBoolean()){
                     DeveloperController developerController = new DeveloperController(); //переходим в меню developer
@@ -51,8 +51,8 @@ public class ProjectController extends CoreController {
                     continue;
                 }
             }
-            project.setDeveloper(developerDAO.getById(idTeam));
-            ConsoleHelper.showMessage("Добавлен developer " + developerDAO.getById(idTeam));
+            project.setDeveloper(JDBCDeveloperDAO.getById(idTeam));
+            ConsoleHelper.showMessage("Добавлен developer " + JDBCDeveloperDAO.getById(idTeam));
 
         } while (idTeam != 0);
 
@@ -64,7 +64,7 @@ public class ProjectController extends CoreController {
     public void save(Core core) {
         Project project = (Project) core;
 
-        if (projectDAO.save(project)){
+        if (JDBCProjectDAO.save(project)){
             ConsoleHelper.showMessage("Объект создан");
         } else {
             ConsoleHelper.showMessage("Объект не создан, попробуйте еще раз");
@@ -78,7 +78,7 @@ public class ProjectController extends CoreController {
             if (id == 0) {
                 break;
             }
-            Project project = projectDAO.getById(id);
+            Project project = JDBCProjectDAO.getById(id);
             if (project != null){
                 CoreView.show(project);
             } else {
@@ -88,7 +88,7 @@ public class ProjectController extends CoreController {
     }
 
     public void readAll(){
-        List<Core> projects = projectDAO.getAll();
+        List<Core> projects = JDBCProjectDAO.getAll();
         if (projects.isEmpty()){
             ConsoleHelper.showMessage("Список пуст");
         } else {
@@ -107,13 +107,13 @@ public class ProjectController extends CoreController {
             ConsoleHelper.showMessage("Введите id, который хотите обновить или 0, чтобы выйти");
             id = dr.readInt();
             if (id == 0) return;
-            project = projectDAO.getById(id);
+            project = JDBCProjectDAO.getById(id);
             if (project == null){
                 ConsoleHelper.showMessage("Нет такого объекта");
             }
         } while (project == null);
 
-        if (projectDAO.update(id, create())){
+        if (JDBCProjectDAO.update(id, create())){
             ConsoleHelper.showMessage("Объект обновлен");
         } else {
             ConsoleHelper.showMessage("Не удалось обновить объект");
@@ -124,7 +124,7 @@ public class ProjectController extends CoreController {
         ConsoleHelper.showMessage("Введите id удаляемого объекта");
         int id = dr.readInt();
 
-        if (projectDAO.remove(projectDAO.getById(id))){
+        if (JDBCProjectDAO.remove(JDBCProjectDAO.getById(id))){
             ConsoleHelper.showMessage("Объект удален");
         } else {
             ConsoleHelper.showMessage("Нет такого объекта");

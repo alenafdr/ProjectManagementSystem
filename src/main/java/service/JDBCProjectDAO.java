@@ -4,24 +4,19 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationExceptio
 import model.*;
 import view.ConsoleHelper;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
-public class ProjectDAO extends CoreDAO{
+public class JDBCProjectDAO extends JDBCGeneric implements GenericDAO{
     private String nameTable = "projects";
-    DeveloperDAO developerDAO;
+    JDBCDeveloperDAO JDBCDeveloperDAO;
 
 
-    public ProjectDAO() {
-        developerDAO = new DeveloperDAO();
+    public JDBCProjectDAO() {
+        JDBCDeveloperDAO = new JDBCDeveloperDAO();
     }
 
     @Override
@@ -42,7 +37,7 @@ public class ProjectDAO extends CoreDAO{
                 ConsoleHelper.showMessage("Inserted object (id=" + idProject + ")");
             }
             for (Developer developer : project.getDevelopers()){
-                developerDAO.addDeveloperToProject(developer.getId(), idProject);
+                JDBCDeveloperDAO.addDeveloperToProject(developer.getId(), idProject);
             }
             resultSet.close();
             return true;
@@ -57,7 +52,7 @@ public class ProjectDAO extends CoreDAO{
 
     @Override
     public Project getById(int id){
-        Project answer = null;
+        Project result = null;
         if (id == 0){
             return new Project(0, "null");
         }
@@ -69,16 +64,16 @@ public class ProjectDAO extends CoreDAO{
             while (resultSet.next()) {
                 int newId = resultSet.getInt("id");
                 String name = resultSet.getString("name");
-                answer = new Project(newId, name);
-                for (Developer developer : developerDAO.getDeveloperByProjectId(newId)){
-                    answer.setDeveloper(developer);
+                result = new Project(newId, name);
+                for (Developer developer : JDBCDeveloperDAO.getDeveloperByProjectId(newId)){
+                    result.setDeveloper(developer);
                 }
             }
             resultSet.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return answer;
+        return result;
     }
 
     @Override
@@ -94,7 +89,7 @@ public class ProjectDAO extends CoreDAO{
                 int id = resultSet.getInt("id");
                 String name = resultSet.getString("name");
                 project = new Project(id, name);
-                for (Developer developer : developerDAO.getDeveloperByProjectId(id)){
+                for (Developer developer : JDBCDeveloperDAO.getDeveloperByProjectId(id)){
                     project.setDeveloper(developer);
                 }
                 result.add(project);
@@ -119,10 +114,10 @@ public class ProjectDAO extends CoreDAO{
             statement.setInt(2, id);
             statement.executeUpdate();
             for (Developer developer : project.getDevelopers()){
-                developerDAO.addDeveloperToProject(developer.getId(), id);
+                JDBCDeveloperDAO.addDeveloperToProject(developer.getId(), id);
             }
             project.setId(id);
-            developerDAO.deleteAllExcept(project);
+            JDBCDeveloperDAO.deleteAllExcept(project);
             return true;
         } catch (MySQLIntegrityConstraintViolationException e){
             ConsoleHelper.showMessage(e.getMessage());

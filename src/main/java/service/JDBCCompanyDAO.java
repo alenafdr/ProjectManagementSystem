@@ -3,25 +3,19 @@ package service;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import model.Company;
 import model.Core;
-import model.Developer;
 import model.Project;
 import view.ConsoleHelper;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
-public class CompanyDAO extends CoreDAO {
+public class JDBCCompanyDAO extends JDBCGeneric implements GenericDAO{
     private String nameTable = "companies";
-    ProjectDAO projectDAO;
+    JDBCProjectDAO JDBCProjectDAO;
 
-    public CompanyDAO() {
-        projectDAO = new ProjectDAO();
+    public JDBCCompanyDAO() {
+        JDBCProjectDAO = new JDBCProjectDAO();
     }
 
     @Override
@@ -42,7 +36,7 @@ public class CompanyDAO extends CoreDAO {
                 ConsoleHelper.showMessage("Inserted object (id=" + idCompany + ")");
             }
             for (Project project : company.getProjects()){
-                projectDAO.addProjectToCompany(project.getId(), idCompany);
+                JDBCProjectDAO.addProjectToCompany(project.getId(), idCompany);
             }
             resultSet.close();
             return true;
@@ -57,7 +51,7 @@ public class CompanyDAO extends CoreDAO {
 
     @Override
     public Company getById(int id){
-        Company answer = null;
+        Company result = null;
         if (id == 0){
             return new Company(0, "null");
         }
@@ -69,16 +63,16 @@ public class CompanyDAO extends CoreDAO {
             while (resultSet.next()) {
                 int newId = resultSet.getInt("id");
                 String name = resultSet.getString("name");
-                answer = new Company(newId, name);
-                for (Project project : projectDAO.getProjectByCompabyId(newId)){
-                    answer.setProject(project);
+                result = new Company(newId, name);
+                for (Project project : JDBCProjectDAO.getProjectByCompabyId(newId)){
+                    result.setProject(project);
                 }
             }
             resultSet.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return answer;
+        return result;
     }
 
     @Override
@@ -94,7 +88,7 @@ public class CompanyDAO extends CoreDAO {
                 int id = resultSet.getInt("id");
                 String name = resultSet.getString("name");
                 company = new Company(id, name);
-                for (Project project : projectDAO.getProjectByCompabyId(id)){
+                for (Project project : JDBCProjectDAO.getProjectByCompabyId(id)){
                     company.setProject(project);
                 }
                 result.add(company);
@@ -118,10 +112,10 @@ public class CompanyDAO extends CoreDAO {
             statement.setInt(2, id);
             statement.executeUpdate();
             for (Project project : company.getProjects()){
-                projectDAO.addProjectToCompany(project.getId(), id);
+                JDBCProjectDAO.addProjectToCompany(project.getId(), id);
             }
             company.setId(id);
-            projectDAO.deleteAllProjectFromCompanyExcept(company);
+            JDBCProjectDAO.deleteAllProjectFromCompanyExcept(company);
             return true;
         } catch (MySQLIntegrityConstraintViolationException e){
             ConsoleHelper.showMessage(e.getMessage());

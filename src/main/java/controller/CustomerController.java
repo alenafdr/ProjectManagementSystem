@@ -3,8 +3,8 @@ package controller;
 import model.Core;
 import model.Customer;
 import model.Project;
-import service.CustomerDAO;
-import service.ProjectDAO;
+import service.JDBCCustomerDAO;
+import service.JDBCProjectDAO;
 import view.ConsoleHelper;
 import view.CoreView;
 
@@ -12,14 +12,14 @@ import java.util.List;
 
 public class CustomerController extends CoreController {
     private DataReceiver dr;
-    private ProjectDAO projectDAO;
-    private CustomerDAO customerDAO;
+    private JDBCProjectDAO JDBCProjectDAO;
+    private JDBCCustomerDAO JDBCCustomerDAO;
 
     public CustomerController() {
         super();
         dr = super.getDr();
-        projectDAO = new ProjectDAO();
-        customerDAO = new CustomerDAO();
+        JDBCProjectDAO = new JDBCProjectDAO();
+        JDBCCustomerDAO = new JDBCCustomerDAO();
         super.start();
     }
 
@@ -38,14 +38,14 @@ public class CustomerController extends CoreController {
             ConsoleHelper.showMessage("Введите id project для нового объекта или 0, чтобы продолжить");
 
             Project project;
-            for (Core core : projectDAO.getAll()){ //показать все проекты, которые есть в базе
+            for (Core core : JDBCProjectDAO.getAll()){ //показать все проекты, которые есть в базе
                 project = (Project) core;
                 CoreView.show(project);
             }
 
             idProject = dr.readInt();
             if (idProject == 0) continue;
-            if (projectDAO.getById(idProject) == null){
+            if (JDBCProjectDAO.getById(idProject) == null){
                 ConsoleHelper.showMessage("Project с таким id не существует, перейти в меню сущности project? yes/no");
                 if (dr.readBoolean()){
                     ProjectController projectController = new ProjectController(); //переходим в меню skill
@@ -53,8 +53,8 @@ public class CustomerController extends CoreController {
                     continue;
                 }
             }
-            customer.setProject(projectDAO.getById(idProject));
-            ConsoleHelper.showMessage("Добавлен project " + projectDAO.getById(idProject));
+            customer.setProject(JDBCProjectDAO.getById(idProject));
+            ConsoleHelper.showMessage("Добавлен project " + JDBCProjectDAO.getById(idProject));
 
         } while (idProject != 0);
 
@@ -65,7 +65,7 @@ public class CustomerController extends CoreController {
     public void save(Core core) {
         Customer customer = (Customer) core;
 
-        if (customerDAO.save(customer)){
+        if (JDBCCustomerDAO.save(customer)){
             ConsoleHelper.showMessage("Объект создан");
         } else {
             ConsoleHelper.showMessage("Объект не создан, попробуйте еще раз");
@@ -80,7 +80,7 @@ public class CustomerController extends CoreController {
             if (id == 0) {
                 break;
             }
-            Customer customer = customerDAO.getById(id);
+            Customer customer = JDBCCustomerDAO.getById(id);
             if (customer != null){
                 CoreView.show(customer);
             } else {
@@ -91,7 +91,7 @@ public class CustomerController extends CoreController {
 
     @Override
     public void readAll() {
-        List<Core> customers = customerDAO.getAll();
+        List<Core> customers = JDBCCustomerDAO.getAll();
         if (customers.isEmpty()){
             ConsoleHelper.showMessage("Список пуст");
         } else {
@@ -111,13 +111,13 @@ public class CustomerController extends CoreController {
             ConsoleHelper.showMessage("Введите id, который хотите обновить или 0, чтобы выйти");
             id = dr.readInt();
             if (id == 0) return;
-            customer = customerDAO.getById(id);
+            customer = JDBCCustomerDAO.getById(id);
             if (customer == null){
                 ConsoleHelper.showMessage("Нет такого объекта");
             }
         } while (customer == null);
 
-        if (customerDAO.update(id, create())){
+        if (JDBCCustomerDAO.update(id, create())){
             ConsoleHelper.showMessage("Объект обновлен");
         } else {
             ConsoleHelper.showMessage("Не удалось обновить объект");
@@ -130,7 +130,7 @@ public class CustomerController extends CoreController {
         ConsoleHelper.showMessage("Введите id удаляемого объекта");
         int id = dr.readInt();
 
-        if (customerDAO.remove(customerDAO.getById(id))){
+        if (JDBCCustomerDAO.remove(JDBCCustomerDAO.getById(id))){
             ConsoleHelper.showMessage("Объект удален");
         } else {
             ConsoleHelper.showMessage("Нет такого объекта");
